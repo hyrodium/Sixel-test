@@ -14,7 +14,7 @@ jobs:
       run: |
         sudo apt-get update -y
         sudo apt-get install -y xvfb
-        Xvfb :99 -screen 0 640x512x24 &
+        Xvfb :99 -screen 0 1280x1024x24 &
         echo "DISPLAY=:99.0" >> $GITHUB_ENV
 
     - name: Install ffmpeg and xterm
@@ -22,9 +22,10 @@ jobs:
 
     - name: Run script and record
       run: |
-        xterm -e "bash -c 'echo Hello, World!; sleep 10; echo Bye; read'" &
-        sleep 1  # Wait for xterm to open
-        ffmpeg -y -f x11grab -video_size 640x512 -i :99.0 -t 15 output.mp4
+        # Specify the geometry for xterm: WidthxHeight+Xoffset+Yoffset
+        xterm -geometry 1280x1024+0+0 -e "bash -c 'echo Hello, World!; sleep 10; echo Bye; read'" &
+        sleep 3  # Increased wait time before recording
+        ffmpeg -y -f x11grab -video_size 1280x1024 -i :99.0 -t 15 output.mp4
 
     - name: Upload recording
       uses: actions/upload-artifact@v2
