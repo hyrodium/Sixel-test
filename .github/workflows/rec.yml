@@ -1,4 +1,4 @@
-name: Terminal Recording
+name: Terminal Recording with SIXEL Image Display
 
 on: [push]
 
@@ -17,14 +17,17 @@ jobs:
         Xvfb :99 -screen 0 1280x1024x24 &
         echo "DISPLAY=:99.0" >> $GITHUB_ENV
 
-    - name: Install ffmpeg and xterm
-      run: sudo apt-get install -y ffmpeg xterm
+    - name: Install ffmpeg, xterm, and libsixel
+      run: |
+        sudo apt-get install -y ffmpeg xterm libsixel-bin
+        # Optionally, you can also download a sample image for demonstration.
+        wget https://upload.wikimedia.org/wikipedia/commons/c/ce/Phalaenopsis_5kB.jpg -O sample.jpg
 
     - name: Run script and record
       run: |
-        # Specify the geometry for xterm: WidthxHeight+Xoffset+Yoffset
-        xterm -geometry 1280x1024+0+0 -e "bash -c 'echo Hello, World!; sleep 10; echo Bye; read'" &
-        sleep 3  # Increased wait time before recording
+        # Using xterm with sixel support enabled
+        xterm -ti 340 -geometry 1280x1024+0+0 -e "bash -c 'img2sixel sample.jpg; read'" &
+        sleep 3
         ffmpeg -y -f x11grab -video_size 1280x1024 -i :99.0 -t 15 output.mp4
 
     - name: Upload recording
