@@ -1,0 +1,33 @@
+name: Terminal Recording
+
+on: [push]
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Xvfb
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y xvfb
+        Xvfb :99 -screen 0 1280x1024x24 &
+        echo "DISPLAY=:99.0" >> $GITHUB_ENV
+
+    - name: Install ffmpeg and xterm
+      run: sudo apt-get install -y ffmpeg xterm
+
+    - name: Run script and record
+      run: |
+        xterm -e "bash -c 'echo Hello, World!; sleep 10; echo Bye; read'" &
+        sleep 1  # Wait for xterm to open
+        ffmpeg -y -f x11grab -video_size 1280x1024 -i :99.0 -t 15 output.mp4
+
+    - name: Upload recording
+      uses: actions/upload-artifact@v2
+      with:
+        name: recording
+        path: output.mp4
